@@ -26,7 +26,7 @@ public class SMSForwarder extends BroadcastReceiver {
 
             SmsMessage[] smsMessages = new SmsMessage[pdus.length];
 
-            DatabaseHelper db = new DatabaseHelper(context);
+            MatcherDatabase db = new MatcherDatabase(context);
 
             for (int i = 0; i < pdus.length; i++) {
                 smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
@@ -36,7 +36,7 @@ public class SMSForwarder extends BroadcastReceiver {
 
                 Log.i("SMSForwarder", sender + " : " + message);
 
-                DatabaseHelper.Matcher matcher = db.executeMatchers(message);
+                MatcherDatabase.Matcher matcher = db.executeMatchers(message);
                 if(matcher != null) {
                     sendSMS(context, "01025566155", message);
                 }

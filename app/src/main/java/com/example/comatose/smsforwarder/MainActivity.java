@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.MenuItem;
@@ -17,15 +18,16 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     DatabaseAdapter adapter;
 
-    ArrayList<DatabaseHelper.Matcher> matchers;
+    ArrayList<MatcherDatabase.Matcher> matchers;
 
-    DatabaseHelper db;
+    MatcherDatabase db;
 
     ArrayList<String> matcherList;
 
@@ -46,13 +48,13 @@ public class MainActivity extends AppCompatActivity {
 
         ListView listView = (ListView) findViewById(R.id.listView);
 
-        db = new DatabaseHelper(this);
+        db = new MatcherDatabase(this);
 
         matchers = db.listMatchers();
 
         matcherList = new ArrayList<String>();
 
-        for (DatabaseHelper.Matcher matcher : matchers) {
+        for (MatcherDatabase.Matcher matcher : matchers) {
             matcherList.add(matcher.value);
         }
 
@@ -116,6 +118,8 @@ public class MainActivity extends AppCompatActivity {
     public AdapterView.OnItemLongClickListener onItemLongClickListener = new AdapterView.OnItemLongClickListener() {
         @Override
         public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+            Log.i("SMSForwarder", "arg2=" + arg2);
+            Log.i("SMSForwarder", "arg3=" + arg3);
             final int deleteItem = arg2;
 
             // Creating a new alert dialog to confirm the delete
@@ -125,21 +129,14 @@ public class MainActivity extends AppCompatActivity {
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog,
                                                     int whichButton) {
-                                    // Retrieving the note from our matchers
-                                    // property, which contains all notes from
-                                    // our database
-                                    DatabaseHelper.Matcher note = matchers.get(deleteItem);
+                                    MatcherDatabase.Matcher note = matchers.get(deleteItem);
 
-                                    // Deleting it from the ArrayList<string>
-                                    // property which is linked to our adapter
-                                    matcherList.remove(deleteItem);
-
-                                    // Deleting the note from our database
-                                    db.removeMatcher(note.id);
-
-                                    // Tell the adapter to update the list view
-                                    // with the latest changes
-                                    adapter.notifyDataSetChanged();
+                                    if(db.removeMatcher(note.id)) {
+                                        matcherList.remove(deleteItem);
+                                        adapter.notifyDataSetChanged();
+                                    } else {
+                                        Toast.makeText(getApplicationContext(), "Remove failed.", Toast.LENGTH_SHORT).show();
+                                    }
 
                                     dialog.dismiss();
                                 }
@@ -168,13 +165,17 @@ public class MainActivity extends AppCompatActivity {
         alert.setPositiveButton("ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 if (name.getText().toString().length() > 0) {
-                    long Id = db.addMatcher(name.getText().toString());
+                    long id = db.addMatcher(name.getText().toString());
+                    if(id != -1) {
+                        MatcherDatabase.Matcher matcher = db.new Matcher((int) id, name.getText().toString());
 
-                    DatabaseHelper.Matcher matcher = db.new Matcher((int) Id, name.getText().toString());
-
-                    matchers.add(matcher);
-                    matcherList.add(matcher.value);
-                    adapter.notifyDataSetChanged();
+                        matchers.add(matcher);
+                        matcherList.add(matcher.value);
+                        adapter.notifyDataSetChanged();
+                    }
+                    else {
+                        Toast.makeText(getApplicationContext(), "Add failed", Toast.LENGTH_SHORT).show();
+                    }
                 }
 
                 // This hides the android keyboard

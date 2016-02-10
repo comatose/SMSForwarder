@@ -8,7 +8,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-public class DatabaseHelper extends SQLiteOpenHelper {
+public class MatcherDatabase extends SQLiteOpenHelper {
     public class Matcher {
         public Matcher(int id, String value) {
             this.id = id;
@@ -24,7 +24,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLID = "id";
     public static final String COLVALUE = "value";
 
-    DatabaseHelper(Context context) {
+    MatcherDatabase(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
@@ -56,32 +56,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public ArrayList<Matcher> listMatchers() {
         SQLiteDatabase db = this.getReadableDatabase();
-        ArrayList<Matcher> listItems = new ArrayList<Matcher>();
+        ArrayList<Matcher> results = new ArrayList<Matcher>();
 
         Cursor cursor = db.rawQuery("SELECT * from " + DATABASE_TABLE_NAME, new String[] {});
 
         if (cursor.moveToFirst()) {
             do {
-                listItems.add(new Matcher(cursor.getInt(cursor.getColumnIndex(COLID)),
+                results.add(new Matcher(cursor.getInt(cursor.getColumnIndex(COLID)),
                         cursor.getString(cursor.getColumnIndex(COLVALUE))));
             } while (cursor.moveToNext());
         }
 
         cursor.close();
 
-        return listItems;
+        return results;
     }
 
-    public void removeMatcher(long id) {
-        SQLiteDatabase db = this.getReadableDatabase();
-
-        String string = String.valueOf(id);
-        db.execSQL("DELETE FROM " + DATABASE_TABLE_NAME + " WHERE " + COLID + "=" + id + "");
+    public boolean removeMatcher(long id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete(DATABASE_TABLE_NAME, COLID + "=" + id, null) == 1;
     }
 
     public Matcher executeMatchers(String message) {
-        ArrayList<Matcher> listItems;
-
         for (Matcher matcher : listMatchers()) {
             if(message.contains(matcher.value))
                 return matcher;
