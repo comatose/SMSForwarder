@@ -10,7 +10,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     public class Matcher {
-        public Matcher() {}
+        public Matcher(int id, String value) {
+            this.id = id;
+            this.value = value;
+        }
         int id;
         String value;
     }
@@ -30,12 +33,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Here we are creating two columns in our database.
-        // EntryID, which is the primary key and Title which will hold the
-        // todo text
         db.execSQL("CREATE TABLE " + DATABASE_TABLE_NAME + " (" + COLID
                 + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLVALUE + " TEXT)");
-
     }
 
     /**
@@ -47,35 +46,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // TODO Auto-generated method stub
     }
 
-    /**
-     * This method adds a record to the database. All we pass in is the todo
-     * text
-     */
-    public long addRecord(String msg) {
+    public long addMatcher(String value) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
-        cv.put(COLVALUE, msg);
+        cv.put(COLVALUE, value);
 
         return db.insert(DATABASE_TABLE_NAME, null, cv);
     }
 
-    /**
-     * //This method returns all notes from the database
-     */
-    public ArrayList<Matcher> getAll() {
+    public ArrayList<Matcher> listMatchers() {
         SQLiteDatabase db = this.getReadableDatabase();
         ArrayList<Matcher> listItems = new ArrayList<Matcher>();
 
-        Cursor cursor = db.rawQuery("SELECT * from " + DATABASE_TABLE_NAME,
-                new String[] {});
+        Cursor cursor = db.rawQuery("SELECT * from " + DATABASE_TABLE_NAME, new String[] {});
 
         if (cursor.moveToFirst()) {
             do {
-                Matcher note = new Matcher();
-                note.id = cursor.getInt(cursor.getColumnIndex(COLID));
-                note.value = cursor.getString(cursor.getColumnIndex(COLVALUE));
-
-                listItems.add(note);
+                listItems.add(new Matcher(cursor.getInt(cursor.getColumnIndex(COLID)),
+                        cursor.getString(cursor.getColumnIndex(COLVALUE))));
             } while (cursor.moveToNext());
         }
 
@@ -84,28 +72,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return listItems;
     }
 
-    /*
-     * //This method deletes a record from the database.
-     */
-    public void deleteNote(long id) {
+    public void removeMatcher(long id) {
         SQLiteDatabase db = this.getReadableDatabase();
 
         String string = String.valueOf(id);
-        db.execSQL("DELETE FROM " + DATABASE_TABLE_NAME + " WHERE " + COLID
-                + "=" + id + "");
+        db.execSQL("DELETE FROM " + DATABASE_TABLE_NAME + " WHERE " + COLID + "=" + id + "");
     }
 
-    public Boolean match(String message) {
-        // This returns a list of all our current available notes
+    public Matcher executeMatchers(String message) {
         ArrayList<Matcher> listItems;
-        listItems = getAll();
 
-        // Assigning the title to our global property so we can access it
-        // later after certain actions (deleting/adding)
-        for (Matcher note : listItems) {
-            if(message.contains(note.value))
-                return true;
+        for (Matcher matcher : listMatchers()) {
+            if(message.contains(matcher.value))
+                return matcher;
         }
-        return false;
+        return null;
     }
 }

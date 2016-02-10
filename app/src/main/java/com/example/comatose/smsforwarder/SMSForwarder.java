@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
-import android.widget.Toast;
 
 public class SMSForwarder extends BroadcastReceiver {
     public SMSForwarder() {
@@ -37,8 +36,10 @@ public class SMSForwarder extends BroadcastReceiver {
 
                 Log.i("SMSForwarder", sender + " : " + message);
 
-                if(db.match(message))
+                DatabaseHelper.Matcher matcher = db.executeMatchers(message);
+                if(matcher != null) {
                     sendSMS(context, "01025566155", message);
+                }
             }
         }
     }
