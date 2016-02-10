@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
+import android.util.Log;
 import android.widget.Toast;
 
 public class SMSForwarder extends BroadcastReceiver {
@@ -34,7 +35,9 @@ public class SMSForwarder extends BroadcastReceiver {
                 String sender = smsMessages[i].getOriginatingAddress();
                 String message = smsMessages[i].getMessageBody();
 
-                if(sender.equals("01025566155") || db.match(message))
+                Log.i("SMSForwarder", sender + " : " + message);
+
+                if(db.match(message))
                     sendSMS(context, "01025566155", message);
             }
         }

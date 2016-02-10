@@ -5,19 +5,16 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -28,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
     MySimpleArrayAdapter adapter;
 
     // contains our listview items
-    ArrayList<DatabaseHelper.Entry> listItems;
+    ArrayList<com.example.comatose.smsforwarder.DatabaseHelper.Matcher> listItems;
 
     // database
     DatabaseHelper DatabaseHelper;
@@ -68,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Assigning the title to our global property so we can access it
         // later after certain actions (deleting/adding)
-        for (DatabaseHelper.Entry note : listItems) {
+        for (com.example.comatose.smsforwarder.DatabaseHelper.Matcher note : listItems) {
             newData.add(note.value);
         }
 
@@ -159,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
                                     // Retrieving the note from our listItems
                                     // property, which contains all notes from
                                     // our database
-                                    DatabaseHelper.Entry note = listItems.get(deleteItem);
+                                    com.example.comatose.smsforwarder.DatabaseHelper.Matcher note = listItems.get(deleteItem);
 
                                     // Deleting it from the ArrayList<string>
                                     // property which is linked to our adapter
@@ -204,12 +201,12 @@ public class MainActivity extends AppCompatActivity {
                 if (name.getText().toString().length() > 0) {
                     long Id = DatabaseHelper.addRecord(name.getText().toString());
 
-                    DatabaseHelper.Entry entry = DatabaseHelper.new Entry();
-                    entry.id = (int) Id;
-                    entry.value = name.getText().toString();
+                    com.example.comatose.smsforwarder.DatabaseHelper.Matcher matcher = DatabaseHelper.new Matcher();
+                    matcher.id = (int) Id;
+                    matcher.value = name.getText().toString();
 
-                    listItems.add(entry);
-                    newData.add(entry.value);
+                    listItems.add(matcher);
+                    newData.add(matcher.value);
                     adapter.notifyDataSetChanged();
                 }
 

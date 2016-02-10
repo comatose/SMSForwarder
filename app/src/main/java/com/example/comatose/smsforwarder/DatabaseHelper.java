@@ -9,8 +9,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
-    public class Entry {
-        public Entry() {}
+    public class Matcher {
+        public Matcher() {}
         int id;
         String value;
     }
@@ -62,16 +62,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * //This method returns all notes from the database
      */
-    public ArrayList<Entry> getAll() {
+    public ArrayList<Matcher> getAll() {
         SQLiteDatabase db = this.getReadableDatabase();
-        ArrayList<Entry> listItems = new ArrayList<Entry>();
+        ArrayList<Matcher> listItems = new ArrayList<Matcher>();
 
         Cursor cursor = db.rawQuery("SELECT * from " + DATABASE_TABLE_NAME,
                 new String[] {});
 
         if (cursor.moveToFirst()) {
             do {
-                Entry note = new Entry();
+                Matcher note = new Matcher();
                 note.id = cursor.getInt(cursor.getColumnIndex(COLID));
                 note.value = cursor.getString(cursor.getColumnIndex(COLVALUE));
 
@@ -97,12 +97,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public Boolean match(String message) {
         // This returns a list of all our current available notes
-        ArrayList<DatabaseHelper.Entry> listItems;
+        ArrayList<Matcher> listItems;
         listItems = getAll();
 
         // Assigning the title to our global property so we can access it
         // later after certain actions (deleting/adding)
-        for (Entry note : listItems) {
+        for (Matcher note : listItems) {
             if(message.contains(note.value))
                 return true;
         }
