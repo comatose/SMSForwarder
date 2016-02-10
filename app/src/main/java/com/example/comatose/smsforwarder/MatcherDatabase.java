@@ -7,6 +7,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 public class MatcherDatabase extends SQLiteOpenHelper {
     public class Matcher {
@@ -20,8 +21,8 @@ public class MatcherDatabase extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "sms_forwarder";
-    private static final String DATABASE_TABLE_NAME = "message_filter";
-    public static final String COLID = "id";
+    public static final String DATABASE_TABLE_NAME = "message_filter";
+    public static final String COLID = "_id";
     public static final String COLVALUE = "value";
 
     MatcherDatabase(Context context) {
@@ -54,21 +55,22 @@ public class MatcherDatabase extends SQLiteOpenHelper {
         return db.insert(DATABASE_TABLE_NAME, null, cv);
     }
 
-    public ArrayList<Matcher> listMatchers() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        ArrayList<Matcher> results = new ArrayList<Matcher>();
+    public Matcher[] listMatchers() {
+        Cursor cursor = getReadableDatabase().rawQuery("SELECT * from " + DATABASE_TABLE_NAME, new String[]{});
+        if(!cursor.moveToFirst()) // table is empty.
+            return null;
 
-        Cursor cursor = db.rawQuery("SELECT * from " + DATABASE_TABLE_NAME, new String[] {});
-
-        if (cursor.moveToFirst()) {
-            do {
-                results.add(new Matcher(cursor.getInt(cursor.getColumnIndex(COLID)),
-                        cursor.getString(cursor.getColumnIndex(COLVALUE))));
-            } while (cursor.moveToNext());
+        int count = cursor.getCount();
+        Matcher results[] = new Matcher[count];
+        for(int i = 0; i < count; ++i) {
+            int id = cursor.getInt(cursor.getColumnIndex(COLID));
+            String value = cursor.getString(cursor.getColumnIndex(COLVALUE));
+            results[i] = new Matcher(id, value);
+            Log.i("SMSForwarder", id + ", " + value);
+            cursor.moveToNext();
         }
 
         cursor.close();
-
         return results;
     }
 
@@ -78,10 +80,20 @@ public class MatcherDatabase extends SQLiteOpenHelper {
     }
 
     public Matcher executeMatchers(String message) {
-        for (Matcher matcher : listMatchers()) {
-            if(message.contains(matcher.value))
-                return matcher;
+        Cursor cursor = getReadableDatabase().rawQuery("SELECT * from " + DATABASE_TABLE_NAME, new String[]{});
+        try {
+            if(cursor.moveToFirst()) {
+                do {
+                    int id = cursor.getInt(cursor.getColumnIndex(COLID));
+                    String value = cursor.getString(cursor.getColumnIndex(COLVALUE));
+                    Log.i("SMSForwarder", id + ", " + value);
+                    if(message.contains(value))
+                        return new Matcher(id, value);
+                } while (cursor.moveToNext());
+            }
+            return null;
+        } finally {
+            cursor.close();
         }
-        return null;
     }
 }

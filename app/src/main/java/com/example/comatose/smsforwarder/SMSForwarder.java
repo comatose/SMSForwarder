@@ -38,6 +38,7 @@ public class SMSForwarder extends BroadcastReceiver {
 
                 MatcherDatabase.Matcher matcher = db.executeMatchers(message);
                 if(matcher != null) {
+                    Log.i("SMSForwarder", "found matcher: " + matcher.value);
                     sendSMS(context, "01025566155", message);
                 }
             }

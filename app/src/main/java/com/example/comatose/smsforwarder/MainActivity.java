@@ -3,33 +3,25 @@ package com.example.comatose.smsforwarder;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.MenuItem;
-import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.widget.CursorAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-
 public class MainActivity extends AppCompatActivity {
-    DatabaseAdapter adapter;
-
-    ArrayList<MatcherDatabase.Matcher> matchers;
-
-    MatcherDatabase db;
-
-    ArrayList<String> matcherList;
+    SimpleCursorAdapter adapter = null;
+    MatcherDatabase db = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,17 +42,15 @@ public class MainActivity extends AppCompatActivity {
 
         db = new MatcherDatabase(this);
 
-        matchers = db.listMatchers();
+        Cursor cursor = db.getWritableDatabase().rawQuery("SELECT * FROM " + MatcherDatabase.DATABASE_TABLE_NAME, null);
 
-        matcherList = new ArrayList<String>();
+        adapter = new SimpleCursorAdapter(this,
+                R.layout.rowlayout, cursor,
+                new String[] { MatcherDatabase.COLVALUE }, new int[] { R.id.label },
+                CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
 
-        for (MatcherDatabase.Matcher matcher : matchers) {
-            matcherList.add(matcher.value);
-        }
-
-        adapter = new DatabaseAdapter(this);
-
-        listView.setAdapter(adapter);
+        ListView list = (ListView) findViewById(R.id.listView);
+        list.setAdapter(adapter);
 
         listView.setOnItemLongClickListener(onItemLongClickListener);
         hideKeyboard();
@@ -90,28 +80,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public class DatabaseAdapter extends ArrayAdapter<String> {
-        private final Context context;
-
-        public DatabaseAdapter(Context context) {
-            super(context, R.layout.rowlayout, matcherList);
-
-            this.context = context;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-            View rowView = inflater.inflate(R.layout.rowlayout, parent, false);
-
-            TextView textView = (TextView) rowView.findViewById(R.id.label);
-            textView.setText(matcherList.get(position));
-
-            return rowView;
-        }
-    }
-
     /**
      * On a long click delete the selected item
      */
@@ -120,19 +88,18 @@ public class MainActivity extends AppCompatActivity {
         public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
             Log.i("SMSForwarder", "arg2=" + arg2);
             Log.i("SMSForwarder", "arg3=" + arg3);
-            final int deleteItem = arg2;
+            final long selected = arg3;
 
             // Creating a new alert dialog to confirm the delete
             AlertDialog alert = new AlertDialog.Builder(arg1.getContext())
-                    .setTitle("Delete " + matchers.get(deleteItem).value)
+                    .setTitle("Remove?")
                     .setPositiveButton("Ok",
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog,
                                                     int whichButton) {
-                                    MatcherDatabase.Matcher note = matchers.get(deleteItem);
-
-                                    if(db.removeMatcher(note.id)) {
-                                        matcherList.remove(deleteItem);
+                                    if(db.removeMatcher(selected)) {
+                                        Cursor cursor = db.getWritableDatabase().rawQuery("SELECT * FROM " + MatcherDatabase.DATABASE_TABLE_NAME, null);
+                                        adapter.changeCursor(cursor);
                                         adapter.notifyDataSetChanged();
                                     } else {
                                         Toast.makeText(getApplicationContext(), "Remove failed.", Toast.LENGTH_SHORT).show();
@@ -167,10 +134,8 @@ public class MainActivity extends AppCompatActivity {
                 if (name.getText().toString().length() > 0) {
                     long id = db.addMatcher(name.getText().toString());
                     if(id != -1) {
-                        MatcherDatabase.Matcher matcher = db.new Matcher((int) id, name.getText().toString());
-
-                        matchers.add(matcher);
-                        matcherList.add(matcher.value);
+                        Cursor cursor = db.getWritableDatabase().rawQuery("SELECT * FROM " + MatcherDatabase.DATABASE_TABLE_NAME, null);
+                        adapter.changeCursor(cursor);
                         adapter.notifyDataSetChanged();
                     }
                     else {
