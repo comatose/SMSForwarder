@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">SMSForwarder</string>
+    <string name="action_settings">Receiver</string>
+    <string name="bora_number">01025566155</string>
+</resources>
