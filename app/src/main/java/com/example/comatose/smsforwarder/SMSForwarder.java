@@ -39,7 +39,7 @@ public class SMSForwarder extends BroadcastReceiver {
                 MatcherDatabase.Matcher matcher = db.executeMatchers(message);
                 if(matcher != null) {
                     Log.i("SMSForwarder", "found matcher: " + matcher.value);
-                    sendSMS(context, "01025566155", message);
+                    sendGMail(context, "01025566155", message);
                 }
             }
         }
@@ -51,5 +51,20 @@ public class SMSForwarder extends BroadcastReceiver {
 
         SmsManager mSmsManager = SmsManager.getDefault();
         mSmsManager.sendTextMessage(smsNumber, null, smsText, sentIntent, deliveredIntent);
+    }
+
+    public void sendGMail(Context context, String smsNumber, String smsText){
+        GMailSender sender = new GMailSender("mailsender.for.gu@gmail.com", "tka123tjd");
+        try {
+
+            sender.sendMail(
+                    smsText,
+                    smsText + " from " + smsNumber,
+                    "mailsender.for.gu@gmail.com",
+                    "boncheol.gu@gmail.com"
+            );
+        } catch (Exception e) {
+            Log.e("SendMail", e.getMessage(), e);
+        }
     }
 }

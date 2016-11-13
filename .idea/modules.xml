@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file:///mnt/data/home/comatose/AndroidStudioProjects/SMSForwarder/SMSForwarder.iml" filepath="/mnt/data/home/comatose/AndroidStudioProjects/SMSForwarder/SMSForwarder.iml" />
-      <module fileurl="file:///mnt/data/home/comatose/AndroidStudioProjects/SMSForwarder/app/app.iml" filepath="/mnt/data/home/comatose/AndroidStudioProjects/SMSForwarder/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SMSForwarder.iml" filepath="$PROJECT_DIR$/SMSForwarder.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
 </project>
