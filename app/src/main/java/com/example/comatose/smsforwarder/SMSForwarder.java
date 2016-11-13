@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
+import android.widget.Toast;
 
 public class SMSForwarder extends BroadcastReceiver {
     public SMSForwarder() {
@@ -39,7 +40,7 @@ public class SMSForwarder extends BroadcastReceiver {
                 MatcherDatabase.Matcher matcher = db.executeMatchers(message);
                 if(matcher != null) {
                     Log.i("SMSForwarder", "found matcher: " + matcher.value);
-                    sendGMail(context, "01025566155", message);
+                    sendGMail(context, "[" + sender + "] " + message);
                 }
             }
         }
@@ -53,18 +54,16 @@ public class SMSForwarder extends BroadcastReceiver {
         mSmsManager.sendTextMessage(smsNumber, null, smsText, sentIntent, deliveredIntent);
     }
 
-    public void sendGMail(Context context, String smsNumber, String smsText){
-        GMailSender sender = new GMailSender("mailsender.for.gu@gmail.com", "tka123tjd");
+    public void sendGMail(Context context, String text){
         try {
-
-            sender.sendMail(
-                    smsText,
-                    smsText + " from " + smsNumber,
-                    "mailsender.for.gu@gmail.com",
-                    "boncheol.gu@gmail.com"
-            );
+            GMailSender mailSender = new GMailSender("mailsender.for.gu@gmail.com", "bmdcibqjhhhgvtcz");
+            mailSender.sendMail(text, text, "mailsender.for.gu@gmail.com", "borahong330@gmail.com");
+            Log.i("SMSForwarder", "mail sent to her");
+            mailSender.sendMail(text, text, "mailsender.for.gu@gmail.com", "boncheol.gu@gmail.com");
+            Log.i("SMSForwarder", "mail sent to him");
+            Toast.makeText(context, "Mail sent", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
-            Log.e("SendMail", e.getMessage(), e);
+            Log.e("SMSForwarder", e.getMessage(), e);
         }
     }
 }

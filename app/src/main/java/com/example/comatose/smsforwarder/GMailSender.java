@@ -24,11 +24,11 @@ import android.os.AsyncTask;
  */
 
 public class GMailSender extends Authenticator {
-    private String mailhost = "smtp.gmail.com";
+    private final String mailhost = "smtp.gmail.com";
     private String user;
     private String password;
     private Session session;
-    MimeMessage message;
+
     static {
         Security.addProvider(new JSSEProvider());
     }
@@ -57,25 +57,23 @@ public class GMailSender extends Authenticator {
     public synchronized void sendMail(String subject, String body,
                                       String sender, String recipients) throws Exception {
         try {
-            message = new MimeMessage(session);
+            MimeMessage message = new MimeMessage(session);
             DataHandler handler = new DataHandler(new ByteArrayDataSource(
                     body.getBytes(), "text/plain"));
             message.setSender(new InternetAddress(sender));
             message.setSubject(subject);
             message.setDataHandler(handler);
-            if (recipients.indexOf(',') > 0) {
-                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipients));
-            } else {
-                message.setRecipient(Message.RecipientType.TO, new InternetAddress(recipients));
-                new tesetAsynTastk().execute(null, null, null);
-
-            }
+            message.setRecipient(Message.RecipientType.TO, new InternetAddress(recipients));
+            new AsyncMailSender(message).execute(null, null, null);
         } catch (Exception e) {
-
         }
     }
 
-    class tesetAsynTastk extends AsyncTask <Void, Void, Void> {
+    class AsyncMailSender extends AsyncTask <Void, Void, Void> {
+        MimeMessage message;
+
+        public AsyncMailSender(MimeMessage m) { this.message = m; }
+
         @Override
         protected synchronized void onPreExecute() {
             super.onPreExecute();
